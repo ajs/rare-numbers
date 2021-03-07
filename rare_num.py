@@ -166,25 +166,6 @@ def rare_numbers(digits):
                                     yield n
 
 
-class InfRange:
-    def __init__(self, start, stop=None, step=1):
-        self.start = start
-        self.stop = stop
-        self.step = step
-        self.current = start
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.stop is not None and self.current >= self.stop:
-            raise StopIteration
-
-        current = self.current
-        self.current += self.step
-        return current
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose output")
@@ -197,7 +178,9 @@ def main():
         raise ValueError(f"Number of digits must be >= 1, not {start!r}")
     end = options.end
 
-    for digits in InfRange(start, (end+1 if end else None)):
+    for digits in itertools.count(start):
+        if end and digits >= end:
+            break
         if options.verbose:
             print(f"{digits} digits...")
         for rare in rare_numbers(digits=digits):
