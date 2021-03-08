@@ -62,12 +62,17 @@ def is_perfect_square(n):
 
 
 def digital_root(n):
-    """Return the digital root of n by summing digits recursively"""
+    """
+    Return the sum of the digits of n, repeated until one digit remains.
+    This happens to be the same as n % 9 except in the case where the
+    modulus is 0 and n is greater than 0, in which case the result
+    is 9.
+    """
 
-    root = n
-    while len(str(root)) > 1:
-        root = sum(int(d) for d in str(root))
-    return root
+    if n == 0:
+        return 0
+    mn = n % 9
+    return 9 if mn == 0 else mn
 
 
 def is_rare(n, rev=None):
@@ -153,7 +158,8 @@ def rare_numbers(digits):
                         else:
                             # 1 followed by digits in middle piece
                             mid_range = 10 ** (digits - 4)
-                            for mid in range(mid_range, 2 * mid_range):
+                            mid = mid_range
+                            while mid < 2 * mid_range:
                                 # Drop the leading "1" for fast 0-padding
                                 n = int(start + str(mid)[1:] + end)
                                 # Perform a quich check and if it passes, call is_rare
@@ -164,6 +170,19 @@ def rare_numbers(digits):
                                 #check = n + rev if digits % 2 == 0 else n - rev
                                 if n > rev and is_rare(n, rev=rev):
                                     yield n
+                                root_n = digital_root(n)
+                                # A number with a digital root other than 2, 5, 8 or 9
+                                # cannot be a rare number, so we skip forward after 
+                                # checking a number that has such a root. It doesn't
+                                # matter that we're only incrementing the middle-part
+                                # of the final number, since it affects the root the
+                                # same no matter what part of the number you increment.
+                                if root_n in (2, 5):
+                                    mid += 3
+                                elif root_n == 9:
+                                    mid += 2
+                                else:
+                                    mid += 1
 
 
 def main():
@@ -179,7 +198,7 @@ def main():
     end = options.end
 
     for digits in itertools.count(start):
-        if end and digits >= end:
+        if end and digits > end:
             break
         if options.verbose:
             print(f"{digits} digits...")
